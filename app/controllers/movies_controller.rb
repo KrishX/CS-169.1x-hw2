@@ -15,7 +15,7 @@ class MoviesController < ApplicationController
       @movies = @movies.sort { |a, b| a.title <=> b.title }
       @title_hilite = 'hilite' 
     elsif params[:sort] == 'date'
-      @movies = @movies.sort { |a, b| b.release_date <=> a.release_date }
+      @movies = @movies.sort { |a, b| a.release_date <=> b.release_date }
       @date_hilite = 'hilite'
     end
   end
