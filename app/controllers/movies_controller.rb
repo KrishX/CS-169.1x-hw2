@@ -7,20 +7,32 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = []
-
-    # Set the ratings parameters
-    @all_ratings = Movie.ratings
+    # Initialize parameters
+    # for the controller:
+    @all_ratings = Movie.ratings  # all the ratings categories for the movies
+    # for the view:
+    @movies = []                  # movies that get shown for user
     @selected_ratings = Hash.new { |hash, key| hash[key] = 1 }
+                                  # ratings selected by the user
+    @hilite = Hash.new { |hash, key| hash[key] = '' }
+                                  # name of the sorted column
 
-
-    # Set the @selected parameter
+    # Set ratings
+    #
+    # if user has selected ratings
     if params.has_key?(:ratings)
+      # store them in @selected_ratings
       @selected_ratings = params[:ratings]
+      # and in session
       session[:ratings] = params[:ratings]
+    # if user has not selected any ratings, but has a previous session
     elsif session.has_key?(:ratings)
-      redirect_to movies_path(:sort => session[:sort], :ratings => session[:ratings])
+      # redirect the user into a page with the correct url
+      redirect_to movies_path(:sort => session[:sort],
+                              :ratings => session[:ratings])
+    # user has not selected any ratings, nor has a previous session
     else
+      # set @selected_ratings to contain all the ratings
       @all_ratings.each { |r| @selected_ratings[r] }
     end
 
@@ -29,10 +41,7 @@ class MoviesController < ApplicationController
       @movies += Movie.find_all_by_rating(r)
     end
 
-    # Set the @hilite variable
-    @hilite = Hash.new { |hash, key| hash[key] = '' }
-
-    # If sorting is selected
+    # Set sorting of the movies
     #   - sort the movies list
     #   - set hilite to contain the id of the element to be highlighted
     sort_by = params[:sort]
