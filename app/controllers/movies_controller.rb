@@ -1,5 +1,5 @@
 class MoviesController < ApplicationController
-  
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -7,28 +7,28 @@ class MoviesController < ApplicationController
   end
 
   def index
-    if params.has_key?(:ratings)
-      @ratings = params[:ratings].keys
-      @movies = []
-      @ratings.each do |r|
-        @movies += Movie.find_all_by_rating(r)
-        flash[:"#{r}"] = true
-      end
+    @all_ratings = Movie.ratings
+    @ratings = Hash.new { |hash, key| hash[key] = 1 }
 
+    if params.has_key?(:ratings)
+      @ratings = params[:ratings]
     else
-      @movies = Movie.all
+      @all_ratings.each { |r| @ratings[r] }
     end
 
-    @all_ratings = Movie.ratings
-    @title_hilite = '' 
-    @date_hilite = ''
+    @movies = []
+    @ratings.keys.each do |r|
+      @movies += Movie.find_all_by_rating(r)
+    end
 
+    @hilite = Hash.new { |hash, key| hash[key] = '' }
+    
     if params[:sort] == 'title'
       @movies = @movies.sort { |a, b| a.title <=> b.title }
-      @title_hilite = 'hilite' 
-    elsif params[:sort] == 'date'
+      @hilite[:title] = 'hilite'
+    elsif params[:sort] == 'release_date'
       @movies = @movies.sort { |a, b| a.release_date <=> b.release_date }
-      @date_hilite = 'hilite'
+      @hilite[:release_date] = 'hilite' 
     end
   end
 
