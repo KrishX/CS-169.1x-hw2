@@ -7,28 +7,34 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.ratings
-    @ratings = Hash.new { |hash, key| hash[key] = 1 }
+    @movies = []
 
+    # Set the ratings parameters
+    @all_ratings = Movie.ratings
+    @selected_ratings = Hash.new { |hash, key| hash[key] = 1 }
+
+    # Set the @selected parameter
     if params.has_key?(:ratings)
-      @ratings = params[:ratings]
+      @selected_ratings = params[:ratings]
     else
-      @all_ratings.each { |r| @ratings[r] }
+      @all_ratings.each { |r| @selected_ratings[r] }
     end
 
-    @movies = []
-    @ratings.keys.each do |r|
+    # Use @selected_ratings to filter the selected movies
+    @selected_ratings.keys.each do |r|
       @movies += Movie.find_all_by_rating(r)
     end
 
+    # Set the @hilite variable
     @hilite = Hash.new { |hash, key| hash[key] = '' }
-    
-    if params[:sort] == 'title'
-      @movies = @movies.sort { |a, b| a.title <=> b.title }
-      @hilite[:title] = 'hilite'
-    elsif params[:sort] == 'release_date'
-      @movies = @movies.sort { |a, b| a.release_date <=> b.release_date }
-      @hilite[:release_date] = 'hilite' 
+
+    # If sorting is selected
+    #   - sort the movies list
+    #   - set hilite to contain the id of the element to be highlighted
+    sort_by = params[:sort]
+    if sort_by == 'title' || sort_by == 'release_date'
+      @movies = @movies.sort { |a, b| a.send(sort_by) <=> b.send(sort_by) }
+      @hilite.send(:[]=, :"#{sort_by}", 'hilite')
     end
   end
 
