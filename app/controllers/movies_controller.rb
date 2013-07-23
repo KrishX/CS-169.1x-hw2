@@ -13,9 +13,13 @@ class MoviesController < ApplicationController
     @all_ratings = Movie.ratings
     @selected_ratings = Hash.new { |hash, key| hash[key] = 1 }
 
+
     # Set the @selected parameter
     if params.has_key?(:ratings)
       @selected_ratings = params[:ratings]
+      session[:ratings] = params[:ratings]
+    elsif session.has_key?(:ratings)
+      redirect_to movies_path(:sort => session[:sort], :ratings => session[:ratings])
     else
       @all_ratings.each { |r| @selected_ratings[r] }
     end
@@ -35,6 +39,7 @@ class MoviesController < ApplicationController
     if sort_by == 'title' || sort_by == 'release_date'
       @movies = @movies.sort { |a, b| a.send(sort_by) <=> b.send(sort_by) }
       @hilite.send(:[]=, :"#{sort_by}", 'hilite')
+      session[:sort] = sort_by
     end
   end
 
