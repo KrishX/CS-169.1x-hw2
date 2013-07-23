@@ -7,10 +7,8 @@ class MoviesController < ApplicationController
   end
 
   def index
-    # Initialize parameters
-    # for the controller:
+    # Initialize instance variables to be used by the view 
     @all_ratings = Movie.ratings  # all the ratings categories for the movies
-    # for the view:
     @movies = []                  # movies that get shown for user
     @selected_ratings = Hash.new { |hash, key| hash[key] = 1 }
                                   # ratings selected by the user
@@ -21,9 +19,7 @@ class MoviesController < ApplicationController
     #
     # if user has selected ratings
     if params.has_key?(:ratings)
-      # store them in @selected_ratings
       @selected_ratings = params[:ratings]
-      # and in session
       session[:ratings] = params[:ratings]
     # if user has not selected any ratings, but has a previous session
     elsif session.has_key?(:ratings)
@@ -36,19 +32,15 @@ class MoviesController < ApplicationController
       @all_ratings.each { |r| @selected_ratings[r] }
     end
 
-    # Use @selected_ratings to filter the selected movies
-    @selected_ratings.keys.each do |r|
-      @movies += Movie.find_all_by_rating(r)
-    end
-
     # Set sorting of the movies
-    #   - sort the movies list
-    #   - set hilite to contain the id of the element to be highlighted
-    sort_by = params[:sort]
-    if sort_by == 'title' || sort_by == 'release_date'
-      @movies = @movies.sort { |a, b| a.send(sort_by) <=> b.send(sort_by) }
-      @hilite.send(:[]=, :"#{sort_by}", 'hilite')
-      session[:sort] = sort_by
+    #   - fetch the selected movies
+    #   - set hilite to contain the id of the table column to be highlighted
+    sort = params[:sort]
+    if @movies = Movie.fetch_selected_movies(sort, @selected_ratings.keys)
+      @hilite.send(:[]=, :"#{sort}", 'hilite')
+      session[:sort] = sort
+    else
+      @movies = []
     end
   end
 
