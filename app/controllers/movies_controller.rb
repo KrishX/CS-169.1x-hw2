@@ -35,13 +35,17 @@ class MoviesController < ApplicationController
     # Set sorting of the movies
     #   - fetch the selected movies
     #   - set hilite to contain the id of the table column to be highlighted
+    #   - set session to remember sort
     sort = params[:sort]
-    if @movies = Movie.fetch_selected_movies(sort, @selected_ratings.keys)
-      @hilite.send(:[]=, :"#{sort}", 'hilite')
-      session[:sort] = sort
+    if sort == 'title'
+      @movies = Movie.fetch_rated_as(@selected_ratings.keys).sorted_by_title
+    elsif sort == 'release_date'
+      @movies = Movie.fetch_rated_as(@selected_ratings.keys).sorted_by_release_date
     else
-      @movies = []
+      @movies = Movie.fetch_rated_as(@selected_ratings.keys)
     end
+    @hilite.send(:[]=, :"#{sort}", 'hilite')
+    session[:sort] = sort
   end
 
   def new
